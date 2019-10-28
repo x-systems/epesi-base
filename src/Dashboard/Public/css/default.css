@@ -1,0 +1,24 @@
+#dashboard:not(.locked) .panel-sortable-handle {
+	cursor: move;
+}
+
+#dashboard .applet-control {
+	float: right;
+	cursor: pointer;
+}
+
+.panel-header {
+	height: 30px;
+	border-bottom: 1px solid #0e50778c;
+}
+
+.panel-content {
+	padding: 10px;
+}
+
+#dashboard_applets_new {
+	overflow: hidden auto;
+	height: 750px;
+	margin-top: 10px;
+	padding-right: 3px
+}
