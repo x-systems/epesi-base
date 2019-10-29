@@ -1,6 +1,6 @@
 <?php 
 
-namespace Epesi\Base\User\Access\Integration\Joints;
+namespace Epesi\Base\User\Access\Integration;
 
 use Epesi\Core\System\Integration\Joints\SystemSettingsJoint;
 

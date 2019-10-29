@@ -1,13 +1,13 @@
 <?php
 
-namespace Epesi\Base\Dashboard\UI\Seeds;
+namespace Epesi\Base\Dashboard\Seeds;
 
 use atk4\ui\View;
 
 class Applet extends View
 {
 	public $ui = 'applet segment raised';
-	public $defaultTemplate = __DIR__ . '/../Templates/applet.html';
+	public $defaultTemplate = 'applet.html';
 	
 	protected $appletId;
 	protected $jointClass;

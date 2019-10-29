@@ -4,6 +4,7 @@ namespace Epesi\Base\User\Access\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Auth;
 
 class UserAccessServiceProvider extends ServiceProvider
 {

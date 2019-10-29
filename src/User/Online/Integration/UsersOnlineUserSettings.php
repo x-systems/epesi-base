@@ -1,6 +1,6 @@
 <?php 
 
-namespace Epesi\Base\Dashboard\Integration\Joints;
+namespace Epesi\Base\Dashboard\Integration;
 
 use Epesi\Base\User\Settings\Integration\Joints\UserSettingsJoint;
 use Epesi\Base\User\Online\OnlineCore;

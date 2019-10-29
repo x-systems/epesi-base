@@ -1,8 +1,8 @@
 <?php 
 
-namespace Epesi\Base\User\Settings\Integration\Joints;
+namespace Epesi\Base\User\Settings\Integration;
 
-use Epesi\Core\Integration\Joints\UserMenuJoint;
+use Epesi\Base\Layout\Integration\Joints\UserMenuJoint;
 
 class UserMenu extends UserMenuJoint
 {

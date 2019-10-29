@@ -4,8 +4,8 @@ namespace Epesi\Base\User\Access;
 
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Epesi\Core\Integration\Module\ModuleCore;
-use Epesi\Base\User\Access\Integration\Joints\UserAccessSystemSettings;
+use Epesi\Core\Integration\ModuleCore;
+use Epesi\Base\User\Access\Integration\UserAccessSystemSettings;
 use Epesi\Base\User\Access\Providers\UserAccessServiceProvider;
 
 class AccessCore extends ModuleCore

@@ -5,10 +5,10 @@ namespace Epesi\Base\Dashboard;
 use atk4\ui\jsExpression;
 use atk4\ui\jsFunction;
 use atk4\ui\FormField\Input;
-use Epesi\Core\UI\Seeds\Form;
-use Epesi\Core\UI\Seeds\ActionBar;
-use Epesi\Core\Integration\Module\ModuleView;
-use Epesi\Base\Dashboard\UI\Seeds\Applet;
+use Epesi\Core\System\Seeds\Form;
+use Epesi\Base\Layout\Seeds\ActionBar;
+use Epesi\Core\Integration\ModuleView;
+use Epesi\Base\Dashboard\Seeds\Applet;
 use Epesi\Base\Dashboard\Database\Models\Dashboard;
 use Epesi\Base\Dashboard\Integration\Joints\AppletJoint;
 use Illuminate\Support\Facades\Auth;
@@ -130,7 +130,7 @@ class DashboardView extends ModuleView
 						'column-id' => 'admin'
 				]
 		]);
-		
+
 		foreach ( AppletJoint::collect() as $applet ) {
 			$col->add([
 					new Applet(),

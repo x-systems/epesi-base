@@ -1,11 +1,11 @@
 <?php 
 
-namespace Epesi\Base\Dashboard\Integration\Joints;
+namespace Epesi\Base\Dashboard\Integration;
 
-use Epesi\Core\Integration\Joints\NavMenuJoint;
+use Epesi\Base\Layout\Integration\Joints\NavMenuJoint;
 use Epesi\Base\Dashboard\Database\Models\Dashboard;
 use Illuminate\Support\Facades\Auth;
-use Epesi\Core\Integration\Module\ModuleView;
+use Epesi\Core\Integration\ModuleView;
 
 class DashboardNavMenu extends NavMenuJoint
 {

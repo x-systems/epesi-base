@@ -2,10 +2,10 @@
 
 namespace Epesi\Base\Dashboard;
 
-use Epesi\Core\Integration\Module\ModuleCore;
-use Epesi\Base\Dashboard\Integration\Joints\DashboardUserSettings;
-use Epesi\Base\Dashboard\Integration\Joints\DashboardSystemSettings;
-use Epesi\Base\Dashboard\Integration\Joints\DashboardNavMenu;
+use Epesi\Core\Integration\ModuleCore;
+use Epesi\Base\Dashboard\Integration\DashboardUserSettings;
+use Epesi\Base\Dashboard\Integration\DashboardSystemSettings;
+use Epesi\Base\Dashboard\Integration\DashboardNavMenu;
 
 class DashboardCore extends ModuleCore
 {
