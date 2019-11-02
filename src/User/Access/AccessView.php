@@ -12,8 +12,8 @@ use atk4\ui\jsExpression;
 use atk4\ui\TableColumn\Template;
 use atk4\data\Persistence_Static;
 use Epesi\Core\System\Seeds\Form;
-use Epesi\Base\Layout\Seeds\ActionBar;
-use Epesi\Core\Integration\ModuleView;
+use Epesi\Core\Layout\Seeds\ActionBar;
+use Epesi\Core\System\Integration\Modules\ModuleView;
 
 class AccessView extends ModuleView
 {

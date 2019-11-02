@@ -32,7 +32,8 @@
 	"extra" : {
 		"epesi" : {
 			"modules" : [
-				"Epesi\\Base\\Dashboard\\DashboardCore",				
+				"Epesi\\Base\\Dashboard\\DashboardCore",
+				"Epesi\\Base\\User\\UserCore",
 				"Epesi\\Base\\User\\Access\\AccessCore",
 				"Epesi\\Base\\User\\Online\\OnlineCore",
 				"Epesi\\Base\\User\\Settings\\SettingsCore"

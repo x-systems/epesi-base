@@ -2,7 +2,7 @@
 
 namespace Epesi\Base\User\Settings;
 
-use Epesi\Core\Integration\ModuleCore;
+use Epesi\Core\System\Integration\Modules\ModuleCore;
 use Epesi\Base\User\Settings\Integration\UserMenu;
 
 class SettingsCore extends ModuleCore

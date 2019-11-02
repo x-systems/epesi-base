@@ -4,7 +4,7 @@ namespace Epesi\Base\User\Online\Integration;
 
 use Epesi\Base\Dashboard\Integration\Joints\AppletJoint;
 use Epesi\Base\Dashboard\Seeds\Applet;
-use Epesi\Core\Integration\Concerns\HasOptions;
+use Epesi\Core\System\Integration\Modules\Concerns\HasOptions;
 
 class UsersOnlineApplet extends AppletJoint
 {

@@ -2,7 +2,7 @@
 
 namespace Epesi\Base\User\Settings\Integration;
 
-use Epesi\Base\Layout\Integration\Joints\UserMenuJoint;
+use Epesi\Core\Layout\Integration\Joints\UserMenuJoint;
 
 class UserMenu extends UserMenuJoint
 {

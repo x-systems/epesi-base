@@ -4,9 +4,9 @@ namespace Epesi\Base\User\Access;
 
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Epesi\Core\Integration\ModuleCore;
+use Epesi\Core\System\Integration\Modules\ModuleCore;
 use Epesi\Base\User\Access\Integration\UserAccessSystemSettings;
-use Epesi\Base\User\Access\Providers\UserAccessServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AccessCore extends ModuleCore
 {
@@ -14,10 +14,6 @@ class AccessCore extends ModuleCore
 	
 	protected static $joints = [
 			UserAccessSystemSettings::class
-	];
-	
-	protected static $providers = [
-			UserAccessServiceProvider::class
 	];
 	
 	public function defaultRoles()
@@ -49,5 +45,13 @@ class AccessCore extends ModuleCore
 		
 		Permission::findByName('modify system')->delete();
 		Permission::findByName('modify system settings')->delete();
+	}
+	
+	public static function boot()
+	{
+		// allow Super Admin full access
+		Gate::after(function ($user, $ability) {
+			return $user->hasRole('Super Admin');
+		});
 	}
 }

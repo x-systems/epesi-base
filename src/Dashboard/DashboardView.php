@@ -6,8 +6,8 @@ use atk4\ui\jsExpression;
 use atk4\ui\jsFunction;
 use atk4\ui\FormField\Input;
 use Epesi\Core\System\Seeds\Form;
-use Epesi\Base\Layout\Seeds\ActionBar;
-use Epesi\Core\Integration\ModuleView;
+use Epesi\Core\Layout\Seeds\ActionBar;
+use Epesi\Core\System\Integration\Modules\ModuleView;
 use Epesi\Base\Dashboard\Seeds\Applet;
 use Epesi\Base\Dashboard\Database\Models\Dashboard;
 use Epesi\Base\Dashboard\Integration\Joints\AppletJoint;
@@ -418,6 +418,6 @@ class DashboardView extends ModuleView
 	 */
 	protected function userId()
 	{
-		return $this->admin? 0: Auth::user()->id;
+		return $this->admin? 0: Auth::id();
 	}
 }

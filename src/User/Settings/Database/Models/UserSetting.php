@@ -25,7 +25,7 @@ class UserSetting extends Model
 	private static function cacheUserVariables() {
 		if(isset(self::$userVariables)) return;
 
-		$userId = Auth::user()->id;
+		$userId = Auth::id();
 		
 		foreach (self::where('user_id', $userId)->get() as $row) {
 			self::$userVariables[$userId][$row['group']][$row['name']] = $row['value'];
@@ -41,7 +41,7 @@ class UserSetting extends Model
 	}
 	
 	public static function get($group, $name, $user = null) {
-		$user = $user?: Auth::user()->id;
+		$user = $user?: Auth::id();
 		
 		if (!$user || !is_numeric($user)) return;
 		
@@ -51,7 +51,7 @@ class UserSetting extends Model
 	}
 	
 	public static function getGroup($group, $user = null) {
-		$user = $user?: Auth::user()->id;
+		$user = $user?: Auth::id();
 		
 		if (!$user || !is_numeric($user)) return;
 		
@@ -73,7 +73,7 @@ class UserSetting extends Model
 	}
 	
 	public static function put($group, $name, $value, $user = null) {
-		$user_id = $user?: Auth::user()->id;
+		$user_id = $user?: Auth::id();
 		
 		if (!$user_id || !is_numeric($user_id)) return;
 		
@@ -101,7 +101,7 @@ class UserSetting extends Model
 	}
 	
 	public static function forget($group, $name, $user = null) {
-		$user_id = $user?: Auth::user()->id;
+		$user_id = $user?: Auth::id();
 		
 		if (!$user_id || !is_numeric($user_id)) return;
 		
