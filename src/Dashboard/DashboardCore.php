@@ -29,16 +29,22 @@ class DashboardCore extends ModuleCore
 	
 	public static function boot()
 	{
-		// create user default dashboard
+		// create user default dashboard as copy of the system default
 		User::created(function(User $user) {
-			$defaultDashboard = Dashboard::where('user_id', 0)->first();
+			if (! $defaultDashboard = Dashboard::where('user_id', 0)->first()) return;
 			
-			$userDefaultDashboard = clone $defaultDashboard;
+			$userDefaultDashboard = $defaultDashboard->replicate();
 			
 			$userDefaultDashboard->name = __('Default');
 			$userDefaultDashboard->user_id = $user->id;
 			
 			$userDefaultDashboard->save();
+			
+			foreach ($defaultDashboard->applets()->get() as $defaultApplet) {
+				$userApplet = $defaultApplet->replicate();
+				
+				$userApplet->dashboard()->associate($userDefaultDashboard)->save();
+			}
 		});
 	}
 }
