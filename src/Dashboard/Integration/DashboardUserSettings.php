@@ -2,7 +2,7 @@
 
 namespace Epesi\Base\Dashboard\Integration;
 
-use Epesi\Base\User\Settings\Integration\Joints\UserSettingsJoint;
+use Epesi\Core\System\User\Settings\Integration\Joints\UserSettingsJoint;
 use Epesi\Base\Dashboard\DashboardCore;
 
 class DashboardUserSettings extends UserSettingsJoint

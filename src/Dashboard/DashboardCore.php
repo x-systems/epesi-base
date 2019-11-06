@@ -3,7 +3,7 @@
 namespace Epesi\Base\Dashboard;
 
 use Epesi\Core\System\Integration\Modules\ModuleCore;
-use Epesi\Base\User\Database\Models\User;
+use Epesi\Core\System\User\Database\Models\User;
 use Epesi\Base\Dashboard\Database\Models\Dashboard;
 
 class DashboardCore extends ModuleCore
