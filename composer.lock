@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "acb87d471c869a05f13ec4faca95277d",
+    "content-hash": "51212b51d9ef3fae296cee2609a0900e",
     "packages": [
         {
             "name": "atk4/core",
@@ -478,19 +478,20 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/x-systems/epesi-core.git",
-                "reference": "889b95ddc1a78c544fe00b32584b664895a73881"
+                "reference": "234d7ef24ba2faca9e7c6ee219da37a9b47f7b3c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/x-systems/epesi-core/zipball/889b95ddc1a78c544fe00b32584b664895a73881",
-                "reference": "889b95ddc1a78c544fe00b32584b664895a73881",
+                "url": "https://api.github.com/repos/x-systems/epesi-core/zipball/234d7ef24ba2faca9e7c6ee219da37a9b47f7b3c",
+                "reference": "234d7ef24ba2faca9e7c6ee219da37a9b47f7b3c",
                 "shasum": ""
             },
             "require": {
                 "atk4/ui": "^1.7",
                 "joedixon/laravel-translation": "^1.0",
                 "laravel/framework": "5.8.*",
-                "php": ">=7.2"
+                "php": ">=7.2",
+                "spatie/laravel-permission": "^3.2"
             },
             "require-dev": {
                 "orchestra/testbench": "^3.8"
@@ -506,11 +507,9 @@
                     }
                 },
                 "epesi": {
-                    "modules": [
-                        "Epesi\\Core\\System\\SystemCore",
-                        "Epesi\\Core\\Layout\\LayoutCore",
-                        "Epesi\\Core\\HomePage\\HomePageCore"
-                    ]
+                    "modules": {
+                        "Epesi\\Core\\": "src/"
+                    }
                 }
             },
             "autoload": {
@@ -540,7 +539,7 @@
                 "laravel",
                 "package"
             ],
-            "time": "2019-11-05T00:08:08+00:00"
+            "time": "2019-11-06T21:32:28+00:00"
         },
         {
             "name": "erusev/parsedown",
@@ -1118,16 +1117,16 @@
         },
         {
             "name": "phpoption/phpoption",
-            "version": "1.5.0",
+            "version": "1.5.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/schmittjoh/php-option.git",
-                "reference": "94e644f7d2051a5f0fcf77d81605f152eecff0ed"
+                "reference": "894e8f93890b79f29911cce497fe811fe9d931ba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/schmittjoh/php-option/zipball/94e644f7d2051a5f0fcf77d81605f152eecff0ed",
-                "reference": "94e644f7d2051a5f0fcf77d81605f152eecff0ed",
+                "url": "https://api.github.com/repos/schmittjoh/php-option/zipball/894e8f93890b79f29911cce497fe811fe9d931ba",
+                "reference": "894e8f93890b79f29911cce497fe811fe9d931ba",
                 "shasum": ""
             },
             "require": {
@@ -1149,7 +1148,7 @@
             },
             "notification-url": "https://packagist.org/downloads/",
             "license": [
-                "Apache2"
+                "Apache-2.0"
             ],
             "authors": [
                 {
@@ -1164,7 +1163,7 @@
                 "php",
                 "type"
             ],
-            "time": "2015-07-25T16:39:46+00:00"
+            "time": "2019-11-06T12:42:47+00:00"
         },
         {
             "name": "psr/container",
@@ -1391,6 +1390,74 @@
                 "uuid"
             ],
             "time": "2018-07-19T23:38:55+00:00"
+        },
+        {
+            "name": "spatie/laravel-permission",
+            "version": "3.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/laravel-permission.git",
+                "reference": "e3821559c69b2b1ea8fdd967fa89ba13a01ead78"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/laravel-permission/zipball/e3821559c69b2b1ea8fdd967fa89ba13a01ead78",
+                "reference": "e3821559c69b2b1ea8fdd967fa89ba13a01ead78",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/auth": "^5.8|^6.0",
+                "illuminate/container": "^5.8|^6.0",
+                "illuminate/contracts": "^5.8|^6.0",
+                "illuminate/database": "^5.8|^6.0",
+                "php": "^7.2"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^3.8|^4.0",
+                "phpunit/phpunit": "^8.0",
+                "predis/predis": "^1.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Spatie\\Permission\\PermissionServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\Permission\\": "src"
+                },
+                "files": [
+                    "src/helpers.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://spatie.be",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Permission handling for Laravel 5.8 and up",
+            "homepage": "https://github.com/spatie/laravel-permission",
+            "keywords": [
+                "acl",
+                "laravel",
+                "permission",
+                "permissions",
+                "rbac",
+                "roles",
+                "security",
+                "spatie"
+            ],
+            "time": "2019-10-16T19:25:56+00:00"
         },
         {
             "name": "swiftmailer/swiftmailer",
