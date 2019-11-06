@@ -478,12 +478,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/x-systems/epesi-core.git",
-                "reference": "234d7ef24ba2faca9e7c6ee219da37a9b47f7b3c"
+                "reference": "b665d94a9803de1ce4abb224b8706e43aef7a890"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/x-systems/epesi-core/zipball/234d7ef24ba2faca9e7c6ee219da37a9b47f7b3c",
-                "reference": "234d7ef24ba2faca9e7c6ee219da37a9b47f7b3c",
+                "url": "https://api.github.com/repos/x-systems/epesi-core/zipball/b665d94a9803de1ce4abb224b8706e43aef7a890",
+                "reference": "b665d94a9803de1ce4abb224b8706e43aef7a890",
                 "shasum": ""
             },
             "require": {
@@ -539,7 +539,7 @@
                 "laravel",
                 "package"
             ],
-            "time": "2019-11-06T21:32:28+00:00"
+            "time": "2019-11-06T22:28:33+00:00"
         },
         {
             "name": "erusev/parsedown",
