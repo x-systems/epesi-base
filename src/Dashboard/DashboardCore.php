@@ -19,7 +19,15 @@ class DashboardCore extends ModuleCore
 	
 	public function install()
 	{
-		
+		// setup default dashboard
+		Dashboard::create([
+				'user_id' => 0,
+				'name' => __('Admin Default')
+		])->applets()->create([
+				'class' => 'Epesi\\Applets\\Clock\\ClockApplet',
+				'row' => 0,
+				'column' => 3,
+		]);
 	}
 	
 	public function uninstall()
