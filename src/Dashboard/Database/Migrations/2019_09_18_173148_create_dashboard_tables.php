@@ -28,7 +28,7 @@ class CreateDashboardTables extends Migration
             $table->string('class', 512);            
             $table->smallInteger('column')->default(1);
             $table->smallInteger('row')->default(0);
-            $table->text('options');
+            $table->text('options')->nullable();
             
             $table->foreign('dashboard_id')->references('id')->on('dashboards');
         });
