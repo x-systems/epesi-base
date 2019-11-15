@@ -9,7 +9,6 @@ use Epesi\Base\CommonData\Database\Models\CommonData;
 use Epesi\Core\System\Seeds\Form;
 use atk4\ui\jsExpression;
 use atk4\ui\jQuery;
-use atk4\ui\TableColumn\Actions;
 use atk4\ui\jsModal;
 
 class CommonDataSettings extends ModuleView
@@ -19,6 +18,7 @@ class CommonDataSettings extends ModuleView
 	protected $form;
 	protected $parentId;
 
+	protected $grid;
 	protected $buttons = [];
 	
 	public static function access()
@@ -103,7 +103,7 @@ class CommonDataSettings extends ModuleView
 			return $jschain->closest('tr')->transition('fade left');
 		}, 'red trash');
 			
-		$this->grid->addColumn('actions', ['Multiformat', function($row, $column) {		
+		$this->grid->addColumn('actions', ['Multiformat', function($row) {		
 			return [['Template', $this->getControlButtonsHtml($row)]];
 		}, 'caption' => ' ']);
 		
@@ -143,7 +143,7 @@ class CommonDataSettings extends ModuleView
 			$grid->formUpdate->setModel($grid->model, $grid->fieldsUpdate ?: $grid->fieldsDefault);
 			
 			if ($sortBy = $grid->getSortBy()) {
-				$grid->formUpdate->stickyGet($grid->name.'_sort', $sortBy);
+				$grid->formUpdate->stickyGet($grid->name . '_sort', $sortBy);
 			}
 			
 			// set save handler with reload trigger
