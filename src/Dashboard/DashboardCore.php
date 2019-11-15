@@ -30,9 +30,14 @@ class DashboardCore extends ModuleCore
 		]);
 	}
 	
-	public function uninstall()
+	public static function info()
 	{
-		
+		return [
+				__('Author') => 'Georgi Hristov',
+				__('Copyright') => 'X Systems Ltd',
+				'',
+				'Provides dashboard functionality'
+		];
 	}
 	
 	public static function boot()
