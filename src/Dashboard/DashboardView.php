@@ -40,6 +40,8 @@ class DashboardView extends ModuleView
 	{
 		$dashboard = $this->dashboard();
 		
+		$this->requireJS('sortable.jquery-ui.js');
+		
 		$applets = $dashboard->applets()->orderBy('column')->orderBy('row')->get();
 
 		$columns = $this->add(['Columns', 'id' => 'dashboard', 'ui' => 'three stackable grid'  . ($this->isLocked()? ' locked': '')]);
