@@ -6,11 +6,6 @@ use Epesi\Base\CommonData\Database\Models\CommonDataNotFound;
 
 class CommonDataTest extends TestCase
 {
-	protected function getEnvironmentSetUp($app)
-	{
-		$app['config']->set('database.default', 'testing');
-	}
-	
 	protected function getPackageProviders($app)
 	{
 		return [
