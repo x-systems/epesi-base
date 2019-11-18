@@ -6,6 +6,8 @@ use Kalnoy\Nestedset\NodeTrait;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 
+class CommonDataNotFound extends \Exception {}
+
 class CommonData extends Model {
     use NodeTrait;
     
@@ -13,23 +15,27 @@ class CommonData extends Model {
     public $timestamps = false;
     protected static $unguarded = true;
     
+    protected static $cache = [
+    		'id' => [],
+    		'value' => [],
+    		'array' => []
+    ];
+    
     public static function getId($path, $clearCache = false)
     {
-    	static $cache;
-
     	$parentId = null;
     	foreach(explode('/', trim($path,'/')) as $nodeKey) {
     		if ($nodeKey === '') continue; //ignore empty paths
     		
-    		if (empty($cache[$parentId][$nodeKey])) {
+    		if ($clearCache || empty(self::$cache['id'][$parentId][$nodeKey])) {
     			if (! $node = self::where('parent_id', $parentId)->where('key', $nodeKey)->first()) {
     				return false;
     			}
 
-    			$cache[$parentId][$nodeKey] = $node->id;
+    			self::$cache['id'][$parentId][$nodeKey] = $node->id;
     		}
     		
-    		$parentId = $id = $cache[$parentId][$nodeKey];
+    		$parentId = $id = self::$cache['id'][$parentId][$nodeKey];
     	}
     	
     	return $id;
@@ -65,30 +71,32 @@ class CommonData extends Model {
     	} else {
     		if (! $overwrite) return false;
     	}
+
+    	self::findOrFail($id)->update(compact('value', 'readonly'));
     	
-    	self::find($id)->update(compact('value', 'readonly'));
+    	self::clearCache();
     	
     	return true;
     }
     
-    public static function getValue($path, $translate = false)
+    public static function clearCache()
     {
-    	static $cache;
-    	
-    	$key = md5(serialize([$path, $translate]));
-    	
-    	if (! isset($cache[$key])) {
-    		if(! $id = self::getId($path)) return false;
-
-    		$ret = self::find($id)->value;
-
-	    	$cache[$key] = $translate? __($ret): $ret;
-	    }
-	    
-	    return $cache[$key];
+    	self::$cache = array_fill_keys(array_keys(self::$cache), []);
     }
     
-    
+    public static function getValue($path, $translate = false)
+    {
+    	$key = md5(serialize($path));
+    	
+    	if (! isset(self::$cache['value'][$key])) {
+    		if(! $id = self::getId($path)) return false;
+
+    		self::$cache['value'][$key] = self::find($id)->value;
+	    }
+	    
+	    return $translate? __(self::$cache['value'][$key]): self::$cache['value'][$key];
+    }
+        
     /**
      * Creates new array for common use.
      *
@@ -168,6 +176,8 @@ class CommonData extends Model {
     	if (! $id = self::getId($path, true)) return false;
     	
     	self::find($id)->delete();
+    	
+    	self::clearCache();
     }
 
     /**
@@ -178,19 +188,17 @@ class CommonData extends Model {
      */
     public static function getCollection($path, $silent = false)
     {
-    	static $cache;
-
-    	if(isset($cache[$path])) {
-    		return $cache[$path];
+    	if(isset(self::$cache['array'][$path])) {
+    		return self::$cache['array'][$path];
     	}
     	
     	if (! $id = self::getId($path)) {
-    		if ($silent) return collection();
+    		if ($silent) return collect();
     		
-    		new \Exception('Invalid CommonData::getArray() request: ' . $path);
+    		throw new CommonDataNotFound('Invalid CommonData::getArray() request: ' . $path);
     	}
     	
-    	return $cache[$path] = self::where('parent_id', $id)->get();
+    	return self::$cache['array'][$path] = self::where('parent_id', $id)->get();
     }
     
     protected static function validateArrayKeys($array)
