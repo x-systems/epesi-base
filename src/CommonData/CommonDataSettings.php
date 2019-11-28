@@ -76,9 +76,9 @@ class CommonDataSettings extends ModuleView
 		$this->grid->setModel($model = $this->getModel());
 		
 		if ($model->action('count')->getOne() ) {
-			$this->grid->on('click', 'td', new jsExpression(
+			$this->grid->table->onRowClick(new jsExpression(
 					'document.location=\'?parentId=\'+[]',
-					[(new jQuery())->closest('tr')->data('id')]
+					[(new jQuery())->data('id')]
 			));
 		}
 		
