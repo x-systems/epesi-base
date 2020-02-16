@@ -7,11 +7,12 @@ use atk4\ui\jsFunction;
 use atk4\ui\FormField\Input;
 use Epesi\Core\System\Seeds\Form;
 use Epesi\Core\Layout\Seeds\ActionBar;
-use Epesi\Core\System\Integration\Modules\ModuleView;
+use Epesi\Core\System\Modules\ModuleView;
 use Epesi\Base\Dashboard\Seeds\Applet;
-use Epesi\Base\Dashboard\Database\Models\Dashboard;
+use Epesi\Base\Dashboard\Models\Dashboard;
 use Epesi\Base\Dashboard\Integration\Joints\AppletJoint;
 use Illuminate\Support\Facades\Auth;
+use atk4\ui\jsReload;
 
 class DashboardView extends ModuleView
 {
@@ -25,7 +26,7 @@ class DashboardView extends ModuleView
 	public function body()
 	{
 		if (! $this->isSingleDashboard()) {
-			$this->location($this->dashboard()->name);
+			$this->location($this->dashboard()['name']);
 		}
 		
 		// initiate the dashboard first
@@ -42,11 +43,13 @@ class DashboardView extends ModuleView
 		
 		$this->requireJS('sortable.jquery-ui.js');
 		
-		$applets = $dashboard->applets()->orderBy('column')->orderBy('row')->get();
+		$applets = $dashboard->ref('applets')->setOrder(['column', 'row']);
 
 		$columns = $this->add(['Columns', 'id' => 'dashboard', 'ui' => 'three stackable grid'  . ($this->isLocked()? ' locked': '')]);
 		
 		foreach ([1, 2, 3] as $columnId) {
+		    $columnApplets = clone $applets;
+		    
 			/** @scrutinizer ignore-call */
 			$col = $columns->addColumn([
 					'',
@@ -57,12 +60,12 @@ class DashboardView extends ModuleView
 					]
 			]);
 			
-			foreach ($applets->where('column', $columnId) as $applet ) {
+			foreach ($columnApplets->addCondition('column', $columnId) as $applet) {
 				$col->add([
 						new Applet(),
-						'appletId' => $applet->id,
-						'jointClass' => $applet->class,
-						'options' => $applet->options,
+						'appletId' => $applet['id'],
+						'jointClass' => $applet['class'],
+						'options' => $applet['options'],
 						'locked' => $this->isLocked()
 				]);
 			}
@@ -98,7 +101,7 @@ class DashboardView extends ModuleView
 	{
 		$dashboard = $this->dashboard();
 		
-		$this->location([$dashboard->name, __('Find Applets')]);
+		$this->location([$dashboard['name'], __('Find Applets')]);
 		
 		$this->showDashboard();
 		
@@ -163,7 +166,7 @@ class DashboardView extends ModuleView
 		$dashboardMenu->addItem([__('Add applets'), 'icon' => 'edit'])->link($this->selfLink('editDashboard', ['dashboard' => $dashboardId]));
 		
 		// ***** rename ***** //
-		$modal = $this->add(['Modal', 'title' => __('Rename Dashboard')])->set(\Closure::fromCallable([$this, 'renameDashboard']));
+		$modal = $this->add(['Modal', 'title' => __('Rename ":name" Dashboard', ['name' => $this->dashboard()['name']])])->set(\Closure::fromCallable([$this, 'renameDashboard']));
 		
 		$dashboardMenu->addItem([__('Rename dashboard'), 'icon' => 'i cursor'])->on('click', $modal->show());
 		
@@ -197,39 +200,38 @@ class DashboardView extends ModuleView
 	{
 		$form = $view->add(new Form(['buttonSave' => ['Button', __('Create Dashboard'), 'primary']]));
 		
-		$existing = Dashboard::whereIn('user_id', [0, $this->userId()])->pluck('name', 'id');
+		$existing = Dashboard::create()->addCondition('user_id', [0, $this->userId()]);
 		
-		$form->addField('name', __('Name'));
-		$form->addField('base', [
-				'DropDown',
-				'caption' => __('Copy applets from'),
-				'values' => $existing
-		]);
+		$existingList = collect($existing->export())->pluck('name', 'id');
+		
+		$form->addFields([
+		        ['name', __('Name')],
+		        ['base', ['DropDown', 'caption' => __('Copy applets from'), 'values' => $existingList]]
+        ]);
 		
 		$form->layout->addButton(['Button', __('Cancel')])->on('click', $view->owner->hide());
 		
-		$form->onSubmit(function($form) use ($existing) {
+		$form->onSubmit(function($form) use ($existingList) {
 			$values = $form->getValues();
 			
-			$dashboard = Dashboard::create([
+			$dashboard = Dashboard::create();
+			
+			$dashboardId = (int) $dashboard->insert([
 					'name' => $values['name'],
 					'user_id' => $this->userId(),
-					'position' => count($existing)
+			        'position' => count($existingList)
 			]);
 			
 			if ($values['base']) {
-				foreach (Dashboard::find($values['base'])->applets()->get() as $baseApplet) {
-					$applet = $baseApplet->replicate();
-					
-					$applet->dashboard_id = $dashboard->id;
-					
-					$applet->save();
+			    foreach ($dashboard->withID($values['base'])->ref('applets') as $baseApplet) {
+			        // only save on below does not work for some reason. fails when reloading
+			        $baseApplet->duplicate()->saveAndUnload(['dashboard_id' => $dashboardId]);
 				}
 			}
-			
+
 			return [
 					$form->notify(__('Dashboard created, redirecting ...')),
-					new jsExpression('window.setTimeout(function() {window.location.replace([])}, 1200)', [self::selfLink('body', ['dashboard' => $dashboard->id])])
+			        new jsExpression('window.setTimeout(function() {window.location.replace([])}, 1200)', [$this->selfLink('body', ['dashboard' => $dashboardId])])
 			];
 		});
 	}
@@ -238,63 +240,47 @@ class DashboardView extends ModuleView
 	{
 		$form = $view->add(new Form(['buttonSave' => ['Button', __('Save'), 'primary']]));
 
-		$form->addField('name', __('New Name'))->set($this->dashboard()->name);
+		$form->addField('name', __('New Name'))->set($this->dashboard()['name']);
 		
 		$form->layout->addButton(['Button', __('Cancel')])->on('click', $view->owner->hide());
 		
 		$form->onSubmit(function($form) {
-			$values = $form->getValues();
-			
-			$dashboard = $this->dashboard();
-			
-			$dashboard->name = $values['name'];
-			
-			$dashboard->save();
+			$this->dashboard()->save($form->getValues());
 			
 			return [
-					$form->notify(__('Dashboard renamed, reloading ...')),
-					new jsExpression('window.setTimeout(function() {window.location.replace([])}, 1200)', [self::selfLink('body', ['dashboard' => $dashboard->id])])
+					$form->notifySuccess(__('Dashboard renamed, reloading ...')),
+			        new jsExpression('window.setTimeout(function() {window.location.replace([])}, 1200)', [$this->selfLink('body', ['dashboard' => $this->dashboard()->id])])
 			];
 		});
 	}
 	
 	public function deleteDashboard($jsCallback, $dashboardId) 
 	{
-		$dashboard = Dashboard::find($dashboardId);
+		$dashboard = Dashboard::create()->load($dashboardId);
+		
+		$name = $dashboard['name'];
 
 		return $dashboard->delete()? [
-				$this->notify(__('Dashboard ":name" deleted, redirecting ...', ['name' => $dashboard->name])),
-				new jsExpression('window.setTimeout(function() {window.location.replace([])}, 1200)', [self::selfLink()])
+		        $this->notifySuccess(__('Dashboard ":name" deleted, redirecting ...', compact('name'))),
+		        new jsExpression('window.setTimeout(function() {window.location.replace([])}, 1200)', [$this->selfLink()])
 		]: $this->notifyError(__('Error deleting dashboard'));
 	}
 	
 	public function reorderDashboards($view)
 	{
-		$dashboards = $this->userDashboards()->orderBy('position')->get();
-		
-		$rows = [];
-		foreach ($dashboards as $dashboard) {
-			$rows[] = [
-					'id' => $dashboard->id,
-					__('Dashboard') => $dashboard->name,
-					str_ireplace(' ', '_', __('Old Position')) => count($rows) + 1,
-			];
-		}
-		
-		$grid = $view->add(['Grid', 'paginator' => false, 'menu' => false]);
-		$grid->setModel(new \atk4\data\Model(new \atk4\data\Persistence_Static($rows)));
-		
-		$grid->addDragHandler()->onReorder(function ($order) use ($dashboards) {
-			$result = true;
-			foreach ($dashboards as $dashboard) {
-				$dashboard->position = array_search($dashboard->id, $order);
-				
-				$result &= $dashboard->save();
+		$grid = $view->add(['Grid', 'paginator' => false, 'menu' => false, 'model' => $this->userDashboards()->setOrder('position')]);
+	
+		$grid->addDragHandler()->onReorder(function ($order) use ($grid) {
+		    foreach ($this->userDashboards() as $dashboard) {
+				$dashboard->save(['position' => array_search($dashboard->id, $order)]);
 			}
 			
-			return $result? $this->notify(__('Dashboards reordered!')): $this->notifyError(__('Error saving order!'));
+		    return [
+		            new jsReload($grid),
+		            $this->notifySuccess(__('Dashboards reordered!'))
+		    ];
 		});
-			
+
 		$view->add(['View', 'ui' => 'buttons'])->add(['Button', __('Done'), 'primary'])->on('click', new jsExpression('location.reload()'));
 	}
 	
@@ -307,52 +293,49 @@ class DashboardView extends ModuleView
 			
 			$row = array_search($new, $applets);
 
-			$applet = $this->dashboard()->applets()->create([
+			$applets[$row] = $this->dashboard()->ref('applets')->insert([
 					'class' => str_ireplace('-', '\\', preg_replace('/^new_/', '', $new)),
 					'column' => $columnHash['column'],
 					'row' => $row
 			]);
-			
-			$applets[$row] = $applet->id;
 		}
 
-		foreach ($this->dashboard()->applets()->whereIn('id', $applets)->get() as $applet) {
-			$applet->update([
+		foreach ($this->dashboard()->ref('applets')->withID($applets) as $applet) {
+			$applet->save([
 					'column' => $columnHash['column'],
 					'row' => array_search($applet->id, $applets)
 			]);
 		}
 		
-		$removed = $this->dashboard()->applets()->where('column', $columnHash['column']);
+		$removed = $this->dashboard()->ref('applets')->addCondition('column', $columnHash['column']);
 		
 		if ($applets) {
-			$removed = $removed->whereNotIn('id', $applets);
+			$removed->addCondition('id', 'not', $applets);
 		}
 		
-		$this->dashboard()->applets()->where('column', 0)->delete();
-		
-		$removed->update(['column' => 0]);
+		$this->dashboard()->ref('applets')->addCondition('column', 0)->action('delete')->execute();
+				
+		$removed->action('update')->set('column', 0)->execute();
 	}
 	
 	public function showSettings($appletId)
 	{
-		$applet = $this->dashboard()->applets()->find($appletId);
+		$applet = $this->dashboard()->ref('applets')->load($appletId);
 		
-		$joint = new $applet->class();
+		$joint = new $applet['class']();
 		
 		$this->location([__('Edit Applet Settings'), $joint->caption()]);
 		
-		$form = $this->add(new Form())
-		->addElements($joint->elements())
-		->confirmLeave()
-		->setValues($applet->options);
+		$form = $this->add(new Form());
+		$form->addElements($joint->elements());
+		$form->confirmLeave();
+		
+		$form->model->set($applet['options']);
 		
 		$form->validate(function(Form $form) use ($applet) {
-			$applet->options = $form->getValues();
-			
-			$applet->save();
+		    $applet->save(['options' => $form->model->get()]);
 
-			return $form->notify(__('Settings saved!'));
+			return $form->notifySuccess(__('Settings saved!'));
 		});
 			
 		ActionBar::addButton('back');
@@ -374,7 +357,7 @@ class DashboardView extends ModuleView
 	
 	protected function isSingleDashboard()
 	{
-		return $this->userDashboards()->count() <= 1;
+		return $this->userDashboards()->action('count')->getOne() <= 1;
 	}
 	
 	/**
@@ -386,7 +369,7 @@ class DashboardView extends ModuleView
 	protected function dashboard()
 	{
 		if (! is_object($this->dashboard)) {
-			$this->dashboard = $this->dashboard? Dashboard::find($this->dashboard): $this->defaultUserDashboard();
+			$this->dashboard = $this->dashboard? Dashboard::create()->tryLoad($this->dashboard): $this->defaultUserDashboard();
 		}
 
 		return $this->dashboard?: abort(404);
@@ -394,9 +377,9 @@ class DashboardView extends ModuleView
 	
 	protected function defaultUserDashboard()
 	{
-		$userDashboard = $this->userDashboards()->orderBy('position')->first();
+		$userDashboard = $this->userDashboards()->setOrder('position')->tryLoadAny();
 		
-		if (! $userDashboard) {
+		if (! $userDashboard->loaded()) {
 			$this->lock();
 			
 			$userDashboard = $this->defaultSystemDashboard();
@@ -407,12 +390,12 @@ class DashboardView extends ModuleView
 	
 	protected function defaultSystemDashboard()
 	{
-		return $this->userDashboards(0)->orderBy('position')->first();
+	    return $this->userDashboards(0)->setOrder('position')->tryLoadAny();
 	}
 	
 	protected function userDashboards($userId = null)
 	{
-		return Dashboard::where(['user_id' => $userId?? $this->userId()]);
+		return Dashboard::create()->addCondition('user_id', $userId ?? $this->userId());
 	}
 
 	/**

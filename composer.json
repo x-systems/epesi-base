@@ -16,9 +16,10 @@
 		}
 	],
 	"type" : "project",
+	"minimum-stability": "dev",
 	"require" : {
 		"php" : ">=7.2",
-		"epesi/core" : "master-dev",
+		"epesi/core" : "dev-master",
 		"kalnoy/nestedset": "^5.0"
 	},
 	"require-dev" : {

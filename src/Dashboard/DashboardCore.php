@@ -2,9 +2,8 @@
 
 namespace Epesi\Base\Dashboard;
 
-use Epesi\Core\System\Integration\Modules\ModuleCore;
+use Epesi\Core\System\Modules\ModuleCore;
 use Epesi\Core\System\User\Database\Models\User;
-use Epesi\Base\Dashboard\Database\Models\Dashboard;
 
 class DashboardCore extends ModuleCore
 {
@@ -19,15 +18,23 @@ class DashboardCore extends ModuleCore
 	
 	public function install()
 	{
+	    Models\Dashboard::migrate();
+	    Models\DashboardApplet::migrate();
+		
 		// setup default dashboard
-		Dashboard::create([
+	    $dashboardId = (int) Models\Dashboard::create()->insert([
 				'user_id' => 0,
 				'name' => __('Admin Default')
-		])->applets()->create([
-				'class' => 'Epesi\\Applets\\Clock\\ClockApplet',
-				'row' => 0,
-				'column' => 3,
 		]);
+		
+	    Models\DashboardApplet::create()->insert([
+	            [
+	                    'dashboard_id' => $dashboardId,
+	                    'class' => 'Epesi\\Applets\\Clock\\ClockApplet',
+	                    'row' => 0,
+	                    'column' => 3,
+	            ]
+	    ]);
 	}
 	
 	public static function info()
@@ -44,19 +51,14 @@ class DashboardCore extends ModuleCore
 	{
 		// create user default dashboard as copy of the system default
 		User::created(function(User $user) {
-			if (! $defaultDashboard = Dashboard::where('user_id', 0)->first()) return;
-			
-			$userDefaultDashboard = $defaultDashboard->replicate();
-			
-			$userDefaultDashboard->name = __('Default');
-			$userDefaultDashboard->user_id = $user->id;
-			
-			$userDefaultDashboard->save();
-			
-			foreach ($defaultDashboard->applets()->get() as $defaultApplet) {
-				$userApplet = $defaultApplet->replicate();
-				
-				$userApplet->dashboard()->associate($userDefaultDashboard)->save();
+		    if (! $defaultDashboard = Models\Dashboard::create()->addCondition('user_id', 0)->tryLoadAny()) return;
+			$userDefaultDashboard = (clone $defaultDashboard)->duplicate()->save([
+			        'name' => __('Default'),
+			        'user_id' => $user->id
+			]);
+
+			foreach ($defaultDashboard->ref('applets') as $defaultApplet) {
+			    $defaultApplet->duplicate()->saveAndUnload(['dashboard_id' => $userDefaultDashboard->id]);
 			}
 		});
 	}

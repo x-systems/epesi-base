@@ -1,8 +1,8 @@
 <?php
 
 use Orchestra\Testbench\TestCase;
-use Epesi\Base\CommonData\Database\Models\CommonData;
-use Epesi\Base\CommonData\Database\Models\CommonDataNotFound;
+use Epesi\Base\CommonData\Models\CommonData;
+use Epesi\Base\CommonData\Models\CommonDataNotFound;
 
 class CommonDataTest extends TestCase
 {
@@ -17,7 +17,7 @@ class CommonDataTest extends TestCase
 	{
 		parent::setUp();
 		
-		$this->loadMigrationsFrom(__DIR__ . '../../src/CommonData/Database/Migrations');
+		CommonData::migrate();
 	}
 	
     public function testStoreRetrieve()
@@ -96,5 +96,28 @@ class CommonDataTest extends TestCase
     {
     	$this->assertFalse(CommonData::getValue('abc/d/ef'), 'Problem retrieving non-existent commondata value!');
     }
+    
+//     public function testCommonDataField()
+//     {
+//     	$values = ['aa' => 'AA', 'bb' => 'BB'];
+    	
+//     	CommonData::newArray('Test/Field', $values);
+    	
+//     	$model = \Epesi\Core\Data\Model::create('test');
+
+//      	$model->addFields([
+//     			'test' => [\Epesi\Base\CommonData\Fields\CommonData::class, 'path' => 'Test/Field']
+//     	]);
+
+//      	\atk4\schema\Migration::getMigration($model)->migrate();
+     	
+//      	$model->insert(['test' => 'aa']);
+     	
+//      	$model->loadAny();
+     	
+//      	$this->assertEquals('aa', $model->get('test'));
+
+//      	$this->assertEquals($values, $model->getField('test')->values);
+//     }
     
 }

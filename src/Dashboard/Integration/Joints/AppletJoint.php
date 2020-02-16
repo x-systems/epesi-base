@@ -2,9 +2,9 @@
 
 namespace Epesi\Base\Dashboard\Integration\Joints;
 
-use Epesi\Core\System\Integration\Modules\ModuleJoint;
+use Epesi\Core\System\Modules\ModuleJoint;
 use Epesi\Base\Dashboard\Seeds\Applet;
-use Epesi\Core\System\Integration\Modules\Concerns\HasOptions;
+use Epesi\Core\System\Modules\Concerns\HasOptions;
 
 abstract class AppletJoint extends ModuleJoint
 {

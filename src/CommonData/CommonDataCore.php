@@ -2,7 +2,7 @@
 
 namespace Epesi\Base\CommonData;
 
-use Epesi\Core\System\Integration\Modules\ModuleCore;
+use Epesi\Core\System\Modules\ModuleCore;
 
 class CommonDataCore extends ModuleCore
 {
@@ -22,5 +22,15 @@ class CommonDataCore extends ModuleCore
 				'',
 				'Provides commondata lists functionality'
 		];
+	}
+	
+	public function install()
+	{
+	    Models\CommonData::migrate();
+	}
+	
+	public function uninstall()
+	{
+	    
 	}
 }

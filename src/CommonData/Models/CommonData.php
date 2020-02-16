@@ -1,19 +1,21 @@
 <?php
 
-namespace Epesi\Base\CommonData\Database\Models;
+namespace Epesi\Base\CommonData\Models;
 
-use Kalnoy\Nestedset\NodeTrait;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
+use atk4\data\Model;
+use Epesi\Core\Data\HasEpesiConnection;
 
 class CommonDataNotFound extends \Exception {}
 
 class CommonData extends Model {
-    use NodeTrait;
+    use HasEpesiConnection;
     
-    protected $table = 'commondata';
-    public $timestamps = false;
-    protected static $unguarded = true;
+    public $table = 'commondata';
+    
+    public $caption = 'Common Data';
+    
+    public $title_field = 'value';
     
     protected static $cache = [
     		'id' => [],
@@ -21,21 +23,38 @@ class CommonData extends Model {
     		'array' => []
     ];
     
+    function init() {
+        parent::init();
+        
+        $this->addFields([
+                'key' => ['caption' => __('Key')],
+                'value' => ['caption' => __('Value')],
+                'position' => ['type' => 'integer', 'caption' => __('Position')],
+                'readonly' => ['type' => 'boolean']
+        ]);
+        
+        $this->hasOne('parent', [self::class, 'our_field' => 'parent']);
+        
+        $this->getAction('edit')->ui['execButton'] = ['Button', __('Save'), 'class' => ['primary']];
+    }
+    
     public static function getId($path, $clearCache = false)
     {
-    	$parentId = null;
+    	$id = null;
     	foreach(explode('/', trim($path,'/')) as $nodeKey) {
+    	    $parentId = $id;
+    	    
     		if ($nodeKey === '') continue; //ignore empty paths
     		
     		if ($clearCache || empty(self::$cache['id'][$parentId][$nodeKey])) {
-    			if (! $node = self::where('parent_id', $parentId)->where('key', $nodeKey)->first()) {
-    				return false;
-    			}
+    		    $node = self::siblings($parentId)->addCondition('key', $nodeKey)->tryLoadAny();
+    		    
+    			if (! $node->loaded()) return false;
 
     			self::$cache['id'][$parentId][$nodeKey] = $node->id;
     		}
     		
-    		$parentId = $id = self::$cache['id'][$parentId][$nodeKey];
+    		$id = self::$cache['id'][$parentId][$nodeKey];
     	}
     	
     	return $id;
@@ -45,20 +64,25 @@ class CommonData extends Model {
     {
     	if (! $path = trim($path,'/')) return false;
 
-    	$id = $parentId = null;
+    	$id = null;
     	foreach(explode('/', $path) as $nodeKey) {
     		if ($nodeKey === '') continue;
-
-    		if (! $node = self::where('parent_id', $parentId)->where('key', $nodeKey)->first()) {
-    			$node = self::create([
-    					'parent_id' => $parentId,
-    					'key' => $nodeKey,
-    					'readonly' => $readonly,
-    					'position' => self::where('parent_id', $parentId)->count()
-    			], $parentId? self::find($parentId): null);
-    		}
     		
-    		$parentId = $id = $node->id;
+    		$parentId = $id;
+    		
+    		$node = self::siblings($parentId)->addCondition('key', $nodeKey)->tryLoadAny();
+
+    		if ($node->loaded()) {
+    		    $id = $node->id;
+    		}
+    		else {
+    		    $id = $node->insert([
+    		            'parent' => $parentId,
+    		            'key' => $nodeKey,
+    		            'readonly' => $readonly,
+    		            'position' => self::siblings($parentId)->action('count')->getOne()
+    		    ]);
+    		}
     	}
     	
     	return $id;
@@ -72,7 +96,7 @@ class CommonData extends Model {
     		if (! $overwrite) return false;
     	}
 
-    	self::findOrFail($id)->update(compact('value', 'readonly'));
+    	self::create()->tryLoad($id)->save(compact('value', 'readonly'));
     	
     	self::clearCache();
     	
@@ -91,7 +115,7 @@ class CommonData extends Model {
     	if (! isset(self::$cache['value'][$key])) {
     		if(! $id = self::getId($path)) return false;
 
-    		self::$cache['value'][$key] = self::find($id)->value;
+    		self::$cache['value'][$key] = self::create()->tryLoad($id)->get('value');
 	    }
 	    
 	    return $translate? __(self::$cache['value'][$key]): self::$cache['value'][$key];
@@ -117,13 +141,13 @@ class CommonData extends Model {
     			return true;
     		}
     				
-    		self::find($id)->delete();
+    		self::create()->delete($id);
     	}
     			
     	if(! $id = self::newId($path, $readonly)) return false;
     			
     	if ($overwrite) {
-    		self::find($id)->update(compact('readonly'));
+    	    self::create()->tryLoad($id)->save(compact('readonly'));
     	}
     			
     	foreach ($array as $key => $value) {
@@ -175,11 +199,37 @@ class CommonData extends Model {
     public static function deleteArray($path){
     	if (! $id = self::getId($path, true)) return false;
     	
-    	self::find($id)->delete();
+    	self::create()->delete($id);
     	
     	self::clearCache();
     }
+    
+    public static function siblings($parent = null)
+    {
+        $parentId = is_numeric($parent)? $parent: self::getId($parent);
 
+        $model = self::create();
+        
+        //@TODO: remove below when adding null condition fixed
+        return $parentId? $model->addCondition('parent', $parentId): $model->addCondition($model->expr('parent is NULL'));
+    }
+        
+    public static function ancestors($node)
+    {
+        $node = is_numeric($node)? self::create()->tryLoad($node): $node;
+
+        if (! $node['parent']) return [];
+        
+        return array_filter(array_merge([$node['parent']], self::ancestors($node['parent'])));
+    }
+    
+    public static function ancestorsAndSelf($node)
+    {
+        $node = is_numeric($node)? self::create()->tryLoad($node): $node;
+        
+        return array_filter(array_merge([$node['id']], self::ancestors($node)));
+    }
+    
     /**
      * Returns common data collection.
      *
@@ -198,7 +248,7 @@ class CommonData extends Model {
     		throw new CommonDataNotFound('Invalid CommonData::getArray() request: ' . $path);
     	}
     	
-    	return self::$cache['array'][$path] = self::where('parent_id', $id)->get();
+    	return self::$cache['array'][$path] = collect(self::siblings($id)->export());
     }
     
     protected static function validateArrayKeys($array)
