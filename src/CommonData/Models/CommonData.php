@@ -36,6 +36,12 @@ class CommonData extends Model {
         $this->hasOne('parent', [self::class, 'our_field' => 'parent']);
         
         $this->getAction('edit')->ui['execButton'] = ['Button', __('Save'), 'class' => ['primary']];
+        
+        $this->addHook('beforeInsert', function($node, & $data) {
+            $data['position'] = $node->action('fx', ['max', 'position'])->getOne() + 1;
+            
+            $data['readonly'] = $data['readonly'] ?? 0;
+        });
     }
     
     public static function getId($path, $clearCache = false)
@@ -79,8 +85,7 @@ class CommonData extends Model {
     		    $id = $node->insert([
     		            'parent' => $parentId,
     		            'key' => $nodeKey,
-    		            'readonly' => $readonly,
-    		            'position' => self::siblings($parentId)->action('count')->getOne()
+    		            'readonly' => $readonly
     		    ]);
     		}
     	}

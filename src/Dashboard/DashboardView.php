@@ -105,7 +105,7 @@ class DashboardView extends ModuleView
 		
 		$this->showDashboard();
 		
-		ActionBar::addButton('back');
+		ActionBar::addItemButton('back');
 		
 		$adminColumn = $this->columns->addColumn();
 		
@@ -338,9 +338,9 @@ class DashboardView extends ModuleView
 			return $form->notifySuccess(__('Settings saved!'));
 		});
 			
-		ActionBar::addButton('back');
+		ActionBar::addItemButton('back');
 			
-		ActionBar::addButton('save')->on('click', $form->submit());
+		ActionBar::addItemButton('save')->on('click', $form->submit());
 	}
 	
 	public function lock()

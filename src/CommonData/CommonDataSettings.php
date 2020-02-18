@@ -25,7 +25,7 @@ class CommonDataSettings extends ModuleView
 	
 	public function body()
 	{
-		ActionBar::addButton('back')->link(url('view/system'));
+		ActionBar::addItemButton('back')->link(url('view/system'));
 		
 		$this->setAncestors();
 		
@@ -66,13 +66,17 @@ class CommonDataSettings extends ModuleView
 	{		
 		$this->grid = $this->add([
 				'CRUD',
-		        'model' =>  $this->nodes()->setOrder('position'),
 				'editFields' => ['key', 'value'],
+				'addFields' => ['key', 'value'],
 				'displayFields' => ['key', 'value', 'readonly'],
 		        'notifyDefault' => ['jsToast', 'settings' => ['message' => __('Data is saved!'), 'class' => 'success']],
 				'paginator' => false,
+		        'menu' => ActionBar::instance(),
+		        'quickSearch' => ['key', 'value']
 		]);
 
+		$this->grid->setModel($this->nodes()->setOrder('position'));
+		
 		$this->grid->addActionButton(['icon' => 'level down', 'attr' => ['title' => __('Drilldown')]], new jsExpression(
 		        'document.location=\'?parent=\'+[]',
 		        [$this->grid->jsRow()->data('id')]
@@ -114,13 +118,11 @@ class CommonDataSettings extends ModuleView
 	    }
 
 	    $nodes->addHook('beforeInsert', function($node, & $data) {
-	        $data['readonly'] = false;
-	        $data['parent'] = $this->parent();
-	        $data['position'] = $node->action('fx', ['max', 'position'])->getOne() + 1;
+	        $data['parent'] = $this->recall('parent');
 	    });
 	        
-	    $nodes->getAction('edit')->enabled = function($row) {
-	        return !$row['readonly'];
+	    $nodes->getAction('edit')->enabled = function($row = null) {
+	        return $row ? !$row['readonly'] : true;
 	    };
 	    
 	    return $nodes;
