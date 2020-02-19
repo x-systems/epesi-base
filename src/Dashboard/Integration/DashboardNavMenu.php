@@ -17,12 +17,13 @@ class DashboardNavMenu extends NavMenuJoint
 			$ret[$dashboard['name']] = [
 					'access' => true,
 					'weight' => $dashboard['position'],
-					'link' => ModuleView::moduleLink('dashboard', 'body', ['dashboard' => $dashboard->id])
+					'action' => ModuleView::moduleLink('dashboard', 'body', ['dashboard' => $dashboard->id])
 			];
 		}
 
 		return $ret? [
 				__('DASHBOARD') => count($ret) > 1? [
+				        'item' => ['icon' => 'tachometer alternate'],
 						'access' => true,
 						'group' => $ret,
 						'weight' => -10000
