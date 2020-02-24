@@ -1,6 +1,6 @@
 <?php
 
-namespace Epesi\Base\Dashboard\Seeds;
+namespace Epesi\Base\Dashboard\View;
 
 use atk4\ui\View;
 

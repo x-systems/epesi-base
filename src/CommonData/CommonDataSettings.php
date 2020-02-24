@@ -4,7 +4,7 @@ namespace Epesi\Base\CommonData;
 
 use Epesi\Core\System\Modules\ModuleView;
 use Illuminate\Support\Facades\Auth;
-use Epesi\Core\Layout\Seeds\ActionBar;
+use Epesi\Core\Layout\View\ActionBar;
 use atk4\ui\jsExpression;
 use atk4\core\SessionTrait;
 
