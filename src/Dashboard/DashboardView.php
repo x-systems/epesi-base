@@ -268,7 +268,9 @@ class DashboardView extends ModuleView
 	
 	public function reorderDashboards($view)
 	{
-		$grid = $view->add(['Grid', 'paginator' => false, 'menu' => false, 'model' => $this->userDashboards()->setOrder('position')]);
+		$grid = $view->add(['Grid', 'paginator' => false, 'menu' => false]);
+		
+		$grid->setModel($this->userDashboards()->setOrder('position'));
 	
 		$grid->addDragHandler()->onReorder(function ($order) use ($grid) {
 		    foreach ($this->userDashboards() as $dashboard) {
