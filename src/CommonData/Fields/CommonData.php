@@ -12,7 +12,7 @@ class CommonData extends Field_SQL
 		init as _init;
 	}
 	
-	public $type = 'array';
+	public $type = 'enum';
 	
 	public $path = '';
 
