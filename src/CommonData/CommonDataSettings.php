@@ -102,20 +102,14 @@ class CommonDataSettings extends ModuleView
 	
 	public function parent($level = 0)
 	{
-	    return $this->ancestors[$level] ?? 0;
+	    return $this->ancestors[$level] ?? null;
 	}
 	
 	public function nodes()
 	{
 	    $nodes = Models\CommonData::create();
-	    
-	    //@TODO: remove below when adding null condition fixed
-	    if ($parent = $this->parent()) {
-	        $nodes->addCondition('parent', $parent);
-	    }
-	    else {
-	        $nodes->addCondition($nodes->expr('parent is NULL'));
-	    }
+
+	    $nodes->addCondition('parent', $this->parent());
 
 	    $nodes->addHook('beforeInsert', function($node, & $data) {
 	        $data['parent'] = $this->recall('parent');
