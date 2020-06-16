@@ -28,7 +28,7 @@ class CommonData extends Field_SQL
 	/**
 	 * Initialization.
 	 */
-	public function init()
+	public function init(): void
 	{
 		$this->_init();
 		

@@ -11,7 +11,7 @@ class DashboardApplet extends Model
     
     public $table = 'dashboard_applets';
     
-    public function init()
+    public function init(): void
     {
         parent::init();
         

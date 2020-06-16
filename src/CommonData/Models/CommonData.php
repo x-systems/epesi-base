@@ -23,7 +23,8 @@ class CommonData extends Model {
     		'array' => []
     ];
     
-    function init() {
+    function init(): void
+    {
         parent::init();
         
         $this->addFields([

@@ -12,7 +12,7 @@ class Dashboard extends Model
     
     public $table = 'dashboards';
     
-    public function init()
+    public function init(): void
     {
         parent::init();
         
