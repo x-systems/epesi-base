@@ -6,13 +6,6 @@ use Epesi\Base\CommonData\Models\CommonDataNotFound;
 
 class CommonDataTest extends TestCase
 {
-	protected function getPackageProviders($app)
-	{
-		return [
-				\Kalnoy\Nestedset\NestedSetServiceProvider::class,
-		];
-	}
-	
 	protected function setUp(): void
 	{
 		parent::setUp();

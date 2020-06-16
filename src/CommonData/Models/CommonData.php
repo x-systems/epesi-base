@@ -38,7 +38,7 @@ class CommonData extends Model {
         
         $this->getAction('edit')->ui['execButton'] = ['Button', __('Save'), 'class' => ['primary']];
         
-        $this->addHook('beforeInsert', function($node, & $data) {
+        $this->onHook(Model::HOOK_BEFORE_INSERT, function($node, & $data) {
             $data['position'] = $node->action('fx', ['max', 'position'])->getOne() + 1;
             
             $data['readonly'] = $data['readonly'] ?? 0;
