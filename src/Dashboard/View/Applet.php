@@ -3,6 +3,10 @@
 namespace Epesi\Base\Dashboard\View;
 
 use atk4\ui\View;
+use Epesi\Core\System\View\Form;
+use Epesi\Base\Dashboard\Models\DashboardApplet;
+use atk4\ui\Modal;
+use atk4\ui\Button;
 
 class Applet extends View
 {
@@ -32,7 +36,32 @@ class Applet extends View
 				$this->addControl('close', 'applet-close')->setAttr('title', __('Close applet'));
 			}
 			
-			$this->addControl('ellipsis vertical')->setAttr('title', __('Applet settings'))->link($this->app->moduleLink('dashboard', 'showSettings', [$this->appletId]));
+			$modal = Modal::addTo($this, ['title' => __('Edit :applet Applet Settings', ['applet' => $joint->caption()])]);
+			
+			$modal->set(function ($canvas) use ($modal, $joint) {
+			    $form = Form::addTo($canvas, ['buttonSave' => [Button::class, __('Save'), 'primary']]);
+			    
+			    $form->addElements($joint->elements());
+			    $form->confirmLeave();
+			    
+			    $form->model->set($this->options);
+			    
+			    $form->validate(function(Form $form) use ($modal, $joint) {
+			        $model = DashboardApplet::create();
+			        $model->id = $this->appletId;
+			        $model->save(['options' => $form->model->get()]);
+			        
+			        return [
+			            $modal->hide(),
+			            $this->jsReload(),
+			            $form->notifySuccess(__('Settings for :applet applet saved!', ['applet' => $joint->caption()]))			            
+			        ];
+			    });
+			    
+			    Button::addTo($form, __('Cancel'))->on('click', $modal->hide());
+			});
+			
+			$this->addControl('ellipsis vertical')->setAttr('title', __('Applet settings'))->on('click', $modal->show());
 			
 			if ($link = $joint->go()) {
 				$this->addControl('expand')->setAttr('title', __('Full screen'))->link($link);

@@ -13,6 +13,13 @@ use Epesi\Base\Dashboard\Models\Dashboard;
 use Epesi\Base\Dashboard\Integration\Joints\AppletJoint;
 use Illuminate\Support\Facades\Auth;
 use atk4\ui\jsReload;
+use Epesi\Base\Dashboard\Models\DashboardApplet;
+use atk4\ui\Button;
+use atk4\ui\Grid;
+use atk4\ui\View;
+use atk4\ui\DropDown;
+use atk4\ui\Modal;
+use atk4\ui\Columns;
 
 class DashboardView extends ModuleView
 {
@@ -45,7 +52,7 @@ class DashboardView extends ModuleView
 		
 		$applets = $dashboard->ref('applets')->setOrder(['column', 'row']);
 
-		$columns = $this->add(['Columns', 'id' => 'dashboard', 'ui' => 'three stackable grid'  . ($this->isLocked()? ' locked': '')]);
+		$columns = Columns::addTo($this, ['id' => 'dashboard', 'ui' => 'three stackable grid'  . ($this->isLocked()? ' locked': '')]);
 		
 		foreach ([1, 2, 3] as $columnId) {
 		    $columnApplets = clone $applets;
@@ -61,8 +68,7 @@ class DashboardView extends ModuleView
 			]);
 			
 			foreach ($columnApplets->addCondition('column', $columnId) as $applet) {
-				$col->add([
-						new Applet(),
+			    Applet::addTo($col, [
 						'appletId' => $applet['id'],
 						'jointClass' => $applet['class'],
 						'options' => $applet['options'],
@@ -109,10 +115,10 @@ class DashboardView extends ModuleView
 		
 		$adminColumn = $this->columns->addColumn();
 		
-		$search = $adminColumn->add(new Input([
+		$search = Input::addTo($adminColumn, [
 				'placeholder' => __('Search applets'),
 				'icon' => 'search'
-		]))->setStyle(['width' => '100%']);
+		])->setStyle(['width' => '100%']);
 		
 		$search->js(true)->on('keyup', new jsFunction(['e'], [
 				new jsExpression('
@@ -137,8 +143,7 @@ class DashboardView extends ModuleView
 		]);
 
 		foreach ( AppletJoint::collect() as $applet ) {
-			$col->add([
-					new Applet(),
+		    Applet::addTo($col, [
 					'appletId' => 'new_' . str_ireplace('\\', '-', get_class($applet)),
 					'jointClass' => $applet,
 					'admin' => 1,
@@ -166,7 +171,7 @@ class DashboardView extends ModuleView
 		$dashboardMenu->addItem([__('Add applets'), 'icon' => 'edit'])->link($this->selfLink('editDashboard', ['dashboard' => $dashboardId]));
 		
 		// ***** rename ***** //
-		$modal = $this->add(['Modal', 'title' => __('Rename ":name" Dashboard', ['name' => $this->dashboard()['name']])])->set(\Closure::fromCallable([$this, 'renameDashboard']));
+		$modal = Modal::addTo($this, ['title' => __('Rename ":name" Dashboard', ['name' => $this->dashboard()['name']])])->set(\Closure::fromCallable([$this, 'renameDashboard']));
 		
 		$dashboardMenu->addItem([__('Rename dashboard'), 'icon' => 'i cursor'])->on('click', $modal->show());
 		
@@ -174,7 +179,7 @@ class DashboardView extends ModuleView
 		if ($this->admin) return;
 		
 		// ***** add ***** //		
-		$modal = $this->add(['Modal', 'title' => __('Add Dashboard')])->set(\Closure::fromCallable([$this, 'addDashboard']));
+		$modal = Modal::addTo($this, ['title' => __('Add Dashboard')])->set(\Closure::fromCallable([$this, 'addDashboard']));
 		
 		$dashboardMenu->addItem([__('Add dashboard'), 'icon' => 'add'])->on('click', $modal->show());
 		
@@ -198,7 +203,7 @@ class DashboardView extends ModuleView
 	
 	public function addDashboard($view)
 	{
-		$form = $view->add(new Form(['buttonSave' => ['Button', __('Create Dashboard'), 'primary']]));
+		$form = Form::addTo($view, ['buttonSave' => [Button::class, __('Create Dashboard'), 'primary']]);
 		
 		$existing = Dashboard::create()->addCondition('user_id', [0, $this->userId()]);
 		
@@ -206,10 +211,10 @@ class DashboardView extends ModuleView
 		
 		$form->addFields([
 		        ['name', __('Name')],
-		        ['base', ['DropDown', 'caption' => __('Copy applets from'), 'values' => $existingList]]
+		        ['base', [DropDown::class, 'caption' => __('Copy applets from'), 'values' => $existingList]]
         ]);
 		
-		$form->layout->addButton(['Button', __('Cancel')])->on('click', $view->owner->hide());
+		$form->layout->addButton([Button::class, __('Cancel')])->on('click', $view->owner->hide());
 		
 		$form->onSubmit(function($form) use ($existingList) {
 			$values = $form->getValues();
@@ -238,11 +243,11 @@ class DashboardView extends ModuleView
 	
 	public function renameDashboard($view)
 	{
-		$form = $view->add(new Form(['buttonSave' => ['Button', __('Save'), 'primary']]));
+	    $form = Form::addTo($view, ['buttonSave' => [Button::class, __('Save'), 'primary']]);
 
 		$form->addField('name', __('New Name'))->set($this->dashboard()['name']);
 		
-		$form->layout->addButton(['Button', __('Cancel')])->on('click', $view->owner->hide());
+		$form->layout->addButton([Button::class, __('Cancel')])->on('click', $view->owner->hide());
 		
 		$form->onSubmit(function($form) {
 			$this->dashboard()->save($form->getValues());
@@ -268,7 +273,7 @@ class DashboardView extends ModuleView
 	
 	public function reorderDashboards($view)
 	{
-		$grid = $view->add(['Grid', 'paginator' => false, 'menu' => false]);
+		$grid = Grid::addTo($view, ['paginator' => false, 'menu' => false]);
 		
 		$grid->setModel($this->userDashboards()->setOrder('position'));
 	
@@ -283,7 +288,7 @@ class DashboardView extends ModuleView
 		    ];
 		});
 
-		$view->add(['View', 'ui' => 'buttons'])->add(['Button', __('Done'), 'primary'])->on('click', new jsExpression('location.reload()'));
+		$view->add([View::class, 'ui' => 'buttons'])->add([Button::class, __('Done'), 'primary'])->on('click', new jsExpression('location.reload()'));
 	}
 	
 	public function saveColumn($jsCallback, $columnHash)
@@ -320,31 +325,6 @@ class DashboardView extends ModuleView
 		$removed->action('update')->set('column', 0)->execute();
 	}
 	
-	public function showSettings($appletId)
-	{
-		$applet = $this->dashboard()->ref('applets')->load($appletId);
-		
-		$joint = new $applet['class']();
-		
-		$this->location([__('Edit Applet Settings'), $joint->caption()]);
-		
-		$form = $this->add(new Form());
-		$form->addElements($joint->elements());
-		$form->confirmLeave();
-		
-		$form->model->set($applet['options']);
-		
-		$form->validate(function(Form $form) use ($applet) {
-		    $applet->save(['options' => $form->model->get()]);
-
-			return $form->notifySuccess(__('Settings saved!'));
-		});
-			
-		ActionBar::addItemButton('back');
-			
-		ActionBar::addItemButton('save')->on('click', $form->submit());
-	}
-	
 	public function lock()
 	{
 		$this->locked = true;
@@ -364,9 +344,6 @@ class DashboardView extends ModuleView
 	
 	/**
 	 * @return Dashboard
-	 *
-	 * @throws \Symfony\Component\HttpKernel\Exception\HttpException
-	 * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException
 	 */
 	protected function dashboard()
 	{
@@ -405,6 +382,6 @@ class DashboardView extends ModuleView
 	 */
 	protected function userId()
 	{
-		return $this->admin? 0: Auth::id();
+		return $this->admin ? 0 : Auth::id();
 	}
 }
